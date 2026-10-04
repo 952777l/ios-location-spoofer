@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>iOS Location Spoofer · 虚拟定位</title>
+<meta name="theme-color" content="#0a0c11">
+<style>
+:root {
+  --bg: #0a0c11;
+  --card: #12161d;
+  --card2: #191e28;
+  --line: #242b38;
+  --cyan: #17c3cf;
+  --cyan2: #0e97a1;
+  --green: #22c55e;
+  --green2: #159a45;
+  --red: #ff5b60;
+  --amber: #f5a623;
+  --txt: #eef2f8;
+  --muted: #8a93a5;
+  --mono: #7fe3ea;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family: -apple-system, system-ui, "SF Pro", "Helvetica Neue", sans-serif;
+  color: var(--txt);
+  line-height: 1.5;
+  background:
+    radial-gradient(1100px 420px at 50% -140px, rgba(23,195,207,.16), transparent 70%),
+    radial-gradient(700px 360px at 90% 8%, rgba(34,197,94,.08), transparent 65%),
+    var(--bg);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+.wrap { max-width: 600px; margin: 0 auto; padding: 20px 16px calc(44px + env(safe-area-inset-bottom)); }
+
+/* 顶部警告 */
+.warn {
+  position: relative;
+  background: linear-gradient(180deg, rgba(255,91,96,.16), rgba(255,91,96,.06));
+  border: 1px solid rgba(255,91,96,.5);
+  border-left: 5px solid var(--red);
+  border-radius: 12px;
+  padding: 15px 18px;
+  margin-bottom: 12px;
+}
+.warn .t { color: #ff6b70; font-size: 18px; font-weight: 800; letter-spacing: .4px; }
+.warn .b { color: #ffdcdc; font-size: 14.5px; font-weight: 600; line-height: 1.7; margin-top: 8px; }
+
+/* 免责声明 */
+.disc {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.disc-t { font-size: 13px; font-weight: 800; letter-spacing: 2px; color: var(--cyan); margin-bottom: 10px; }
+.disc-list { margin: 0; padding-left: 18px; }
+.disc-list li { font-size: 12.5px; color: var(--muted); line-height: 1.75; margin-bottom: 6px; }
+.disc-list li b { color: #c3ccdb; }
+
+/* Header */
+header { text-align: center; padding: 10px 0 8px; }
+.logo {
+  width: 74px; height: 74px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #17c3cf, #0e97a1);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+  box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(23,195,207,.28);
+  font-size: 36px;
+}
+h1 {
+  font-size: 22px; font-weight: 800;
+  background: linear-gradient(92deg, #eafcff, #7fe3ea);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+.sub { font-size: 13.5px; color: var(--muted); margin-bottom: 6px; }
+.sub a { color: #ff6b70; text-decoration: none; font-weight: 600; }
+.fork { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.fork a { color: var(--cyan); text-decoration: none; }
+.sync {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(34,197,94,.12);
+  border: 1px solid rgba(34,197,94,.35);
+  color: #4ade80;
+  font-size: 12.5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+
+/* 按钮组 */
+.btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  height: 48px; border-radius: 12px; font-size: 15.5px; font-weight: 700;
+  text-decoration: none; transition: all .2s;
+}
+.btn-green {
+  background: linear-gradient(180deg, #22c55e, #159a45);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(34,197,94,.35);
+}
+.btn-green:hover { filter: brightness(1.08); }
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid rgba(255,255,255,.18);
+  color: var(--txt);
+}
+.btn-outline:hover { border-color: var(--cyan); color: var(--cyan); }
+.btn-blue {
+  background: transparent;
+  border: 1.5px solid rgba(23,195,207,.45);
+  color: var(--cyan);
+}
+
+/* 安装模块 */
+.sec-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 16px; font-weight: 700; margin-bottom: 10px;
+}
+.sec-title::before {
+  content: ''; width: 4px; height: 16px;
+  background: var(--cyan); border-radius: 2px;
+}
+.tip {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--amber);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px; color: var(--muted); line-height: 1.7;
+  margin-bottom: 16px;
+}
+.tip b { color: #fbbf24; }
+
+/* 平台卡片 */
+.plat {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.plat .big {
+  display: block;
+  background: linear-gradient(180deg, #17c3cf, #0e97a1);
+  color: #fff;
+  text-align: center;
+  padding: 13px;
+  border-radius: 10px;
+  font-weight: 700; font-size: 15.5px;
+  text-decoration: none;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 14px rgba(23,195,207,.3);
+}
+.plat .line {
+  display: flex; align-items: center; gap: 8px;
+  background: #0d1117;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.plat .url {
+  flex: 1; font-size: 12px; color: var(--mono);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.plat .copy {
+  background: #1e2530; border: 1px solid var(--line);
+  color: var(--txt); border-radius: 6px;
+  padding: 5px 12px; font-size: 13px; cursor: pointer;
+  white-space: nowrap;
+}
+.plat .copy.ok { background: var(--green); color: #fff; border-color: transparent; }
+.plat .pnote { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+
+/* 代码块 */
+.codebox {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 14px 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.codebox code {
+  display: block;
+  background: #0d1117;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--mono);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin: 8px 0;
+  word-break: break-all;
+}
+
+/* 水印背景 */
+.watermark {
+  position: fixed; inset: 0; pointer-events: none; z-index: -1;
+  opacity: 0.04;
+  background-image: repeating-linear-gradient(
+    -25deg,
+    transparent,
+    transparent 80px,
+    rgba(255,255,255,.6) 80px,
+    rgba(255,255,255,.6) 81px
+  );
+  font-size: 13px;
+  color: #fff;
+  display: flex; flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 60px 40px;
+  padding: 20px;
+  transform: rotate(-18deg) scale(1.4);
+  transform-origin: center;
+}
+.watermark span { white-space: nowrap; }
+
+/* Toast */
+#toast {
+  position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: rgba(0,0,0,.85); color: #fff;
+  padding: 10px 20px; border-radius: 999px;
+  font-size: 14px; opacity: 0; transition: all .25s; pointer-events: none;
+  z-index: 99;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+footer {
+  text-align: center; font-size: 12px; color: var(--muted);
+  margin-top: 30px; padding-bottom: 20px;
+}
+</style>
+</head>
+<body>
+
+<!-- 水印 -->
+<div class="watermark" id="wm"></div>
+
+<div class="wrap">
+
+  <!-- 警告 -->
+  <div class="warn">
+    <div class="t">⚠️ 免费开源项目 · 禁止售卖</div>
+    <div class="b">
+      如果你是通过付款来到本页面，请立即联系退款。<br>
+      任何售卖本项目 / 模块的都是骗子。一经发现立即删库，血本无归。
+    </div>
+  </div>
+
+  <!-- 免责声明 -->
+  <div class="disc">
+    <div class="disc-t">免责声明</div>
+    <ol class="disc-list">
+      <li>本项目为免费开源工具，<b>仅供个人学习、研究与技术测试之用</b>，请勿用于任何违反所在国家/地区法律法规的用途。</li>
+      <li>使用本项目（含模块、脚本、选点页）所引发的 <b>一切风险与后果，由使用者自行承担</b>，与开源项目原作者、贡献者及本页面维护者无关。</li>
+      <li>本项目与 <b>Apple Inc.</b> 无任何关联，不隶属、不代表 Apple，亦未获其授权或认可。</li>
+      <li>本项目 <b>不在中国大陆提供服务</b>。</li>
+      <li>下载、安装或使用本项目，即视为你已阅读并同意本声明；如不同意，请立即停止使用。</li>
+    </ol>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">📍</div>
+    <h1>iOS Location Spoofer · 虚拟定位</h1>
+    <div class="sub">
+      📺 YouTube：<a href="https://www.youtube.com/@CyberHandyman/videos" target="_blank">CyberHandyman 赛博工具人</a>
+    </div>
+    <div class="fork">
+      fork from 鸣谢贡献者：
+      <a href="https://github.com/Yu9191/wloc" target="_blank">Yu9191</a> ·
+      <a href="https://github.com/mekos2772/ios-location-spoofer" target="_blank">mekos2772</a> ·
+      <a href="https://github.com/acheong08/ios-location-spoofer" target="_blank">acheong08</a>
+    </div>
+    <div class="sync">✅ 已同步上游 Yu9191/wloc v1.1 · 随机扰动半径 · 港澳台/百度坐标解析</div>
+  </header>
+
+  <!-- 主要按钮 -->
+  <div class="btns">
+    <a class="btn btn-green" href="#select">🗺️ 进入选点网页</a>
+    <a class="btn btn-outline" href="https://www.youtube.com/@CyberHandyman/videos" target="_blank">▶️ 视频教程</a>
+    <a class="btn btn-blue" href="https://t.me/cyberhandymancngroup" target="_blank">✈️ 加入 Telegram 讨论群</a>
+  </div>
+
+  <!-- 安装模块 -->
+  <div class="sec-title">安装模块</div>
+  <p style="font-size:13.5px;color:var(--muted);margin-bottom:12px;">
+    选你的代理客户端，点「一键导入」直接装；或「复制」手动添加。
+  </p>
+
+  <div class="tip">
+    📍 <b>生效前提：</b>① 代理 App 已连接（开关/引擎打开、<b>非「直连」模式</b>）；② 开启 HTTPS 解密(MITM) 并信任证书；③ 装好对应客户端的模块。之后打开选点页选位置、点「储存到设备」即可生效。iOS 26+ 切换后可能需重启一次设备清缓存。
+  </div>
+
+  <div id="plats"></div>
+
+  <!-- QX 资源解析器 -->
+  <div class="codebox">
+    <b style="color:var(--cyan)">Quantumult X 资源解析器 URL</b>（QX 一键导入 / 重写引用需先配好）：
+    <code>https://raw.githubusercontent.com/KOP-XIAO/QuantumultX/master/Scripts/resource-parser.js</code>
+    添加方式 —— 把下面这段填进 QX 配置：
+    <code>[general]<br>#复制下面这些内容（另起一行）<br>resource_parser_url=https://raw.githubusercontent.com/KOP-XIAO/QuantumultX/master/Scripts/resource-parser.js</code>
+  </div>
+
+  <!-- MITM -->
+  <div class="codebox">
+    <b style="color:var(--cyan)">MITM 主机名</b>（如全部配置成功仍不生效，在 MITM / HTTPS 解密中手动加入下面四个域名）：
+    <code>gs-loc.apple.com<br>gs-loc-cn.apple.com<br>bluedot.is.autonavi.com<br>bluedot.is.autonavi.com.gds.alibabadns.com</code>
+  </div>
+
+  <footer>
+    坐标只存在你当前设备上，服务端不留任何记录。<br>
+    GNU AGPL-3.0 · 仅供学习研究
+  </footer>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// 水印
+(function(){
+  const texts = [
+    'YouTube：赛博工具人 @CyberHandyman',
+    '根据 GitHub 开源项目制作',
+    '免费开源 · 禁止售卖'
+  ];
+  const wm = document.getElementById('wm');
+  for(let i=0;i<40;i++){
+    const s = document.createElement('span');
+    s.textContent = texts[i % texts.length];
+    wm.appendChild(s);
+  }
+})();
+
+// 平台配置（请把 BASE 改成你自己的域名）
+const BASE = location.origin; // 自动使用当前域名
+const qxExtra = ''; // 如果需要额外参数可填
+
+const PLATS = [
+  { name: 'Surge', file: 'ios-location-spoofer.sgmodule',
+    scheme: u => 'surge:///install-module?url=' + encodeURIComponent(u) },
+  { name: 'Shadowrocket', file: 'ios-location-spoofer.sgmodule',
+    scheme: u => 'shadowrocket://install?module=' + encodeURIComponent(u) },
+  { name: 'Egern', file: 'ios-location-spoofer.sgmodule',
+    scheme: u => 'egern:///install-module?url=' + encodeURIComponent(u) },
+  { name: 'Loon', file: 'ios-location-spoofer.lnplugin',
+    scheme: u => 'loon://import?plugin=' + encodeURIComponent(u) },
+  { name: 'Stash', file: 'ios-location-spoofer.stoverride',
+    scheme: u => 'stash://install-override?url=' + encodeURIComponent(u) },
+  { name: 'Quantumult X', file: 'ios-location-spoofer.snippet',
+    scheme: u => 'quantumult-x:///add-resource?remote-resource=' + encodeURIComponent(JSON.stringify({ rewrite_remote: [u + qxExtra] })),
+    note: 'QX 没有模块面板：一键导入=添加「重写」资源(需已配资源解析器)；MITM 主机名要手动加进 设置→MITM。' }
+];
+
+function esc(s){ return String(s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"'); }
+function toast(m){
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+function copyText(s){
+  if (navigator.clipboard) return navigator.clipboard.writeText(s);
+  return new Promise((res,rej)=>{
+    const ta = document.createElement('textarea');
+    ta.value = s; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy') ? res() : rej(); } catch(e){ rej(e); }
+    document.body.removeChild(ta);
+  });
+}
+function doCopy(s, btn){
+  copyText(s).then(()=>{
+    toast('已复制模块链接');
+    const o = btn.textContent;
+    btn.classList.add('ok'); btn.textContent = '✓';
+    setTimeout(()=>{ btn.textContent=o; btn.classList.remove('ok'); }, 1200);
+  }).catch(()=> toast('复制失败，请手动选择'));
+}
+
+let html = '';
+PLATS.forEach(p => {
+  const url = BASE + '/' + p.file;
+  html += `
+    <div class="plat">
+      <a class="big" href="${esc(p.scheme(url))}">一键导入 ${esc(p.name)}</a>
+      <div class="line">
+        <span class="url">${esc(url)}</span>
+        <button class="copy" data-url="${esc(url)}">复制</button>
+      </div>
+      ${p.note ? `<div class="pnote">${esc(p.note)}</div>` : ''}
+    </div>`;
+});
+document.getElementById('plats').innerHTML = html;
+
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.addEventListener('click', () => doCopy(btn.dataset.url, btn));
+});
+</script>
+</body>
+</html>
